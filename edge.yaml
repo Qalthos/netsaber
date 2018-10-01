@@ -35,13 +35,6 @@
           - set service dns forwarding name-server 149.112.112.112
           - set service dns forwarding listen-on switch0
 
-    - name: Set static IP mappings
-      edgeos_config:
-        lines:
-          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 static-mapping {{ item.key }} ip-address {{ item.value.ip_address }}
-          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 static-mapping {{ item.key }} mac-address '{{ item.value.mac_address }}'
-      loop: "{{ query('dict', static_ips) }}"
-
     - name: Enable DDNS
       edgeos_config:
         lines:
@@ -56,18 +49,6 @@
           - set port-forward lan-interface switch0
           - set port-forward wan-interface eth4
 
-    - name: Set port forwarding rules
-      edgeos_config:
-        lines:
-          - set port-forward rule {{ index }} description '{{item.name }}'
-          - set port-forward rule {{ index }} forward-to address {{item.address }}
-          - set port-forward rule {{ index }} forward-to port {{item.port }}
-          - set port-forward rule {{ index }} original-port {{item.port }}
-          - set port-forward rule {{ index }} protocol tcp
-      loop: "{{ port_forwards }}"
-      loop_control:
-        index_var: index
-
     - name: Define vlans
       edgeos_vlan:
           aggregate: "{{ vlans }}"
@@ -75,3 +56,6 @@
     - name: Set up VLANs
       include_tasks: edge_vlans.yaml
       loop: "{{ vlans }}"
+
+    - name: Configure static IPs
+      include_tasks: servers.yaml
