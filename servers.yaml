@@ -1,19 +1,8 @@
 ---
 - name: Set static IP mappings
   edgeos_config:
-    lines:
-      - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 static-mapping {{ item.key }} ip-address {{ item.value.ip_address }}
-      - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 static-mapping {{ item.key }} mac-address '{{ item.value.mac_address }}'
-  loop: "{{ query('dict', static_ips) }}"
+    src: 'static-mapping.j2'
 
 - name: Set port forwarding rules
   edgeos_config:
-    lines:
-      - set port-forward rule {{ index }} description '{{item.1.desc }}'
-      - set port-forward rule {{ index }} forward-to address {{item.0.ip_address }}
-      - set port-forward rule {{ index }} forward-to port {{item.1.port }}
-      - set port-forward rule {{ index }} original-port {{item.1.port }}
-      - set port-forward rule {{ index }} protocol tcp
-  loop: "{{ query('subelements', static_ips, 'forwards', {'skip_missing': True}) }}"
-  loop_control:
-    index_var: index
+    src: 'port-forwards.j2'
