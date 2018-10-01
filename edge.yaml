@@ -1,0 +1,77 @@
+---
+- hosts: edge
+  gather_facts: no
+  connection: network_cli
+
+  tasks:
+    - name: Offload hwnat
+      edgeos_config:
+        lines:
+          - set system offload hwnat enable
+
+    - name: Set up management port
+      edgeos_config:
+        lines:
+          - delete interfaces switch switch0 switch-port interface eth3
+          - set interfaces ethernet eth3 address 192.168.2.1/24
+          - set interfaces ethernet eth3 description Management
+        save: yes
+
+    - name: set system
+      edgeos_config:
+        lines:
+          - set system host-name router
+          - set system domain-name {{ domain }}
+          - set system ip override-hostname-ip 192.168.1.1
+
+    - name: Set up DHCP & DNS
+      edgeos_config:
+        lines:
+          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 start 192.168.1.128 stop 192.168.1.191
+          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 domain-name {{ domain }}
+          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller {{ static_ips.unifi.ip_address }}
+          - set service dhcp-server use-dnsmasq enable
+          - set service dns forwarding name-server 9.9.9.9
+          - set service dns forwarding name-server 149.112.112.112
+          - set service dns forwarding listen-on switch0
+
+    - name: Set static IP mappings
+      edgeos_config:
+        lines:
+          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 static-mapping {{ item.key }} ip-address {{ item.value.ip_address }}
+          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 static-mapping {{ item.key }} mac-address '{{ item.value.mac_address }}'
+      loop: "{{ query('dict', static_ips) }}"
+
+    - name: Enable DDNS
+      edgeos_config:
+        lines:
+          - set service dns dynamic interface eth4 service namecheap host-name @
+          - set service dns dynamic interface eth4 service namecheap login {{ namecheap.login }}
+          - set service dns dynamic interface eth4 service namecheap password {{ namecheap.pass }}
+          - set service dns dynamic interface eth4 service namecheap server dynamicdns.park-your-domain.com
+
+    - name: Set up port forwarding
+      edgeos_config:
+        lines:
+          - set port-forward lan-interface switch0
+          - set port-forward wan-interface eth4
+
+    - name: Set port forwarding rules
+      edgeos_config:
+        lines:
+          - set port-forward rule {{ index }} description '{{item.name }}'
+          - set port-forward rule {{ index }} forward-to address {{item.address }}
+          - set port-forward rule {{ index }} forward-to port {{item.port }}
+          - set port-forward rule {{ index }} original-port {{item.port }}
+          - set port-forward rule {{ index }} protocol tcp
+      loop: "{{ port_forwards }}"
+      loop_control:
+        index_var: index
+
+    - name: Define vlans
+      edgeos_vlan:
+          aggregate: "{{ vlans }}"
+
+    - name: Set up VLANs
+      include_tasks: edge_vlans.yaml
+      loop: "{{ vlans }}"
