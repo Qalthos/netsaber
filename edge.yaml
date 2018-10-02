@@ -26,38 +26,25 @@
 
     - name: Set up DNS
       edgeos_config:
+        src: 'dns.j2'
+
+    - name: Set up DHCP
+      edgeos_config:
+        src: 'dhcp.j2'
+
+    - name: Set other DHCP lines
+      edgeos_config:
         lines:
           - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 domain-name {{ domain }}
           - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller 192.168.1.{{ unifi.ip_address }}
-          - set service dns forwarding name-server 9.9.9.9
-          - set service dns forwarding name-server 149.112.112.112
-          - set service dns forwarding listen-on switch0
-
-    - name: Enable DDNS
-      edgeos_config:
-        lines:
-          - set service dns dynamic interface eth4 service namecheap host-name @
-          - set service dns dynamic interface eth4 service namecheap login {{ namecheap.login }}
-          - set service dns dynamic interface eth4 service namecheap password {{ namecheap.pass }}
-          - set service dns dynamic interface eth4 service namecheap server dynamicdns.park-your-domain.com
-
-    - name: Set up port forwarding
-      edgeos_config:
-        lines:
-          - set port-forward lan-interface switch0
-          - set port-forward wan-interface eth4
-
-    - name: Set static IP mappings
-      edgeos_config:
-        src: 'static-mapping.j2'
 
     - name: Set port forwarding rules
       edgeos_config:
         src: 'port-forwards.j2'
 
-     - name: Define vlans
-       edgeos_vlan:
-           aggregate: "{{ vlans }}"
+    - name: Define vlans
+      edgeos_config:
+        src: 'vlans.j2'
 
      - name: Set up VLANs
        include_tasks: edge_vlans.yaml

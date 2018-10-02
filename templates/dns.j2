@@ -1,0 +1,19 @@
+service {
+    dns {
+        dynamic {
+            interface eth4 {
+                service namecheap {
+                    host-name @
+                    login {{ namecheap.login }}
+                    password {{namecheap.pass }}
+                    server dynamicdns.park-your-domain.com
+                }
+            }
+        }
+        forwarding {
+            listen-on switch0
+            name-server 9.9.9.9
+            name-server 149.112.112.112
+        }
+    }
+}

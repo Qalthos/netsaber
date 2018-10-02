@@ -1,0 +1,10 @@
+interfaces {
+    switch switch0 {
+        {% for vlan in vlans[1:] -%}
+        vif {{ vlan.vlan_id }} {
+            address 192.168.{{ vlan.vlan_id }}.1/24
+            description '{{ vlan.name }} VLAN'
+        }
+        {% endfor %}
+    }
+}
