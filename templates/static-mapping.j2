@@ -1,14 +1,18 @@
 service {
     dhcp-server {
-        shared-network-name LAN {
-            subnet 192.168.1.0/24 {
-                {% for item in query('dict', static_ips) -%}
+        use-dnsmasq enable
+        {% for vlan in vlans -%}
+        shared-network-name {{ vlan.name }} {
+            subnet 192.168.{{ vlan.vlan_id }}.0/24 {
+                start 192.168.{{ vlan.vlan_id }}.{{ vlan.dhcp.start }} stop 192.168.{{ vlan.vlan_id }}.{{ vlan.dhcp.stop }}
+                {% for item in query('dict', vlan.dhcp.static_ips) -%}
                 static-mapping {{ item.key }} {
-                    ip-address {{ item.value.ip_address }}
+                    ip-address 192.168.{{ vlan.vlan_id }}.{{ item.value.ip_address }}
                     mac-address {{ item.value.mac_address }}
                 }
                 {% endfor %}
             }
         }
+        {% endfor %}
     }
 }

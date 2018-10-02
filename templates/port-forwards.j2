@@ -3,7 +3,7 @@ port-forward {
     rule {{ loop.index - 1 }} {
         description {{ item.1.desc }}
         forward-to {
-            address {{ item.0.ip_address }}
+            address 192.168.1.{{ item.0.ip_address }}
             port {{ item.1.port }}
         }
         original-port {{ item.1.port }}

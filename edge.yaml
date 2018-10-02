@@ -24,13 +24,11 @@
           - set system domain-name {{ domain }}
           - set system ip override-hostname-ip 192.168.1.1
 
-    - name: Set up DHCP & DNS
+    - name: Set up DNS
       edgeos_config:
         lines:
-          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 start 192.168.1.128 stop 192.168.1.191
           - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 domain-name {{ domain }}
-          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller {{ static_ips.unifi.ip_address }}
-          - set service dhcp-server use-dnsmasq enable
+          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller 192.168.1.{{ static_ips.unifi.ip_address }}
           - set service dns forwarding name-server 9.9.9.9
           - set service dns forwarding name-server 149.112.112.112
           - set service dns forwarding listen-on switch0
@@ -57,5 +55,5 @@
       include_tasks: edge_vlans.yaml
       loop: "{{ vlans }}"
 
-    - name: Configure static IPs
+    - name: Configure DHCP
       include_tasks: servers.yaml
