@@ -1,8 +1,0 @@
----
-- name: Set static IP mappings
-  edgeos_config:
-    src: 'static-mapping.j2'
-
-- name: Set port forwarding rules
-  edgeos_config:
-    src: 'port-forwards.j2'

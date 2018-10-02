@@ -1,5 +1,5 @@
 port-forward {
-    {% for item in query('subelements', static_ips, 'forwards', dict(skip_missing=True)) -%}
+    {% for item in query('subelements', vlans.0.dhcp.static_ips, 'forwards', dict(skip_missing=True)) -%}
     rule {{ loop.index - 1 }} {
         description {{ item.1.desc }}
         forward-to {

@@ -28,7 +28,7 @@
       edgeos_config:
         lines:
           - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 domain-name {{ domain }}
-          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller 192.168.1.{{ static_ips.unifi.ip_address }}
+          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller 192.168.1.{{ unifi.ip_address }}
           - set service dns forwarding name-server 9.9.9.9
           - set service dns forwarding name-server 149.112.112.112
           - set service dns forwarding listen-on switch0
@@ -47,13 +47,18 @@
           - set port-forward lan-interface switch0
           - set port-forward wan-interface eth4
 
-    - name: Define vlans
-      edgeos_vlan:
-          aggregate: "{{ vlans }}"
+    - name: Set static IP mappings
+      edgeos_config:
+        src: 'static-mapping.j2'
 
-    - name: Set up VLANs
-      include_tasks: edge_vlans.yaml
-      loop: "{{ vlans }}"
+    - name: Set port forwarding rules
+      edgeos_config:
+        src: 'port-forwards.j2'
 
-    - name: Configure DHCP
-      include_tasks: servers.yaml
+     - name: Define vlans
+       edgeos_vlan:
+           aggregate: "{{ vlans }}"
+
+     - name: Set up VLANs
+       include_tasks: edge_vlans.yaml
+       loop: "{{ vlans }}"
