@@ -46,6 +46,6 @@
       edgeos_config:
         src: 'vlans.j2'
 
-     - name: Set up VLANs
-       include_tasks: edge_vlans.yaml
-       loop: "{{ vlans }}"
+    - name: Set firewalls
+      edgeos_config:
+        src: 'firewall.j2'

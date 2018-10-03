@@ -1,0 +1,66 @@
+firewall {
+    group {
+        {% for vlan in vlans -%}
+        network-group {{ vlan.name|upper }}_GROUP {
+            description '{{ vlan.name }} devices'
+            network 192.168.{{ vlan.vlan_id }}.0/24
+        }
+        {% endfor %}
+    }
+    {% for vlan in vlans if vlan.vlan_id != 1 -%}
+    name {{ vlan.name|upper }}_LOCAL {
+        default-action drop
+        description '{{ vlan.name }} intranetwork rules'
+        rule 1 {
+            action accept
+            description 'Allow DHCP'
+            destination port 67-68
+            log disable
+            protocol udp
+    }
+    name {{ vlan.name|upper }}_IN {
+        default-action accept
+        description '{{ vlan.name }} outbound rules'
+        rule 1 {
+            action accept
+            description 'Allow established/related'
+            destination address 192.168.1.0/16
+            log disable
+            state {
+                established enable
+                related enable
+            }
+        }
+        {% for rule in query('subelements', vlans.0.dhcp.static_ips, 'firewall_rules', dict(skip_missing=True)) if vlan.vlan_id in rule.1.applies_to -%}
+        rule {{ loop.index + 1 }} {
+            action accept
+            description 'Allow {{ rule.1.desc }}'
+            destination {
+                address 192.168.1.{{ rule.0.ip_address }}
+                port {{ rule.1.port }}
+            }
+            log disable
+            protocol {{ rule.1.proto }}
+        }
+        {% endfor -%}
+        rule 10 {
+            action drop
+            description 'Drop other local traffic'
+            destination address 192.168.1.0/16
+            log disable
+        }
+    }
+    {% endfor %}
+}
+interfaces {
+    switch switch0 {
+        {% for vlan in vlans if vlan.vlan_id != 1 -%}
+        vif {{ vlan.vlan_id }} {
+            firewall {
+                in name {{ vlan.name|upper }}_IN
+                local name {{ vlan.name|upper }}_LOCAL
+            }
+        }
+        {% endfor %}
+    }
+}
