@@ -4,10 +4,13 @@
   connection: network_cli
 
   tasks:
-    - name: Offload hwnat
+    - name: set system
       edgeos_config:
         lines:
           - set system offload hwnat enable
+          - set system host-name router
+          - set system domain-name {{ domain }}
+          - set system ip override-hostname-ip 192.168.1.1
 
     - name: Set up management port
       edgeos_config:
@@ -16,13 +19,6 @@
           - set interfaces ethernet eth3 address 192.168.2.1/24
           - set interfaces ethernet eth3 description Management
         save: yes
-
-    - name: set system
-      edgeos_config:
-        lines:
-          - set system host-name router
-          - set system domain-name {{ domain }}
-          - set system ip override-hostname-ip 192.168.1.1
 
     - name: Set up DNS
       edgeos_config:

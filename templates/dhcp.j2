@@ -4,13 +4,20 @@ service {
         {% for vlan in vlans -%}
         shared-network-name {{ vlan.name }} {
             subnet 192.168.{{ vlan.vlan_id }}.0/24 {
+                {% if vlan.vlan_id == 1 -%}
+                dns-server 192.168.1.1
+                {% else -%}
+                dns-server 9.9.9.9
+                dns-server 149.112.112.112
+                {% endif -%}
                 start 192.168.{{ vlan.vlan_id }}.{{ vlan.dhcp.start }} stop 192.168.{{ vlan.vlan_id }}.{{ vlan.dhcp.stop }}
                 {% for item in query('dict', vlan.dhcp.static_ips) -%}
                 static-mapping {{ item.key }} {
                     ip-address 192.168.{{ vlan.vlan_id }}.{{ item.value.ip_address }}
                     mac-address {{ item.value.mac_address }}
                 }
-                {% endfor %}
+                {% endfor -%}
+                default-router 192.168.{{ vlan.vlan_id }}.1
             }
         }
         {% endfor %}
