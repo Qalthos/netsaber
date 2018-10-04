@@ -38,10 +38,10 @@
       edgeos_config:
         src: 'port-forwards.j2'
 
-    - name: Define vlans
-      edgeos_config:
-        src: 'vlans.j2'
-
     - name: Set firewalls
       edgeos_config:
         src: 'firewall.j2'
+
+    - name: Define vlans
+      edgeos_config:
+        src: 'vlans.j2'

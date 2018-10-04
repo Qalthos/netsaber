@@ -52,15 +52,3 @@ firewall {
     }
     {% endfor %}
 }
-interfaces {
-    switch switch0 {
-        {% for vlan in vlans if vlan.vlan_id != 1 -%}
-        vif {{ vlan.vlan_id }} {
-            firewall {
-                in name {{ vlan.name|upper }}_IN
-                local name {{ vlan.name|upper }}_LOCAL
-            }
-        }
-        {% endfor %}
-    }
-}
