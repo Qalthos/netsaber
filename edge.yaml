@@ -5,8 +5,8 @@
 
   tasks:
     - name: set system
-      edgeos_config:
-        lines:
+      cli_config:
+        config:
           - set system offload hwnat enable
           - set system host-name router
           - set system domain-name {{ domain }}
