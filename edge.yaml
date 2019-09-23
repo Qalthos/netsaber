@@ -4,44 +4,35 @@
   connection: network_cli
 
   tasks:
-    - name: set system
+    - name: set host & domain names
       cli_config:
         config:
-          - set system offload hwnat enable
           - set system host-name router
           - set system domain-name {{ domain }}
           - set system ip override-hostname-ip 192.168.1.1
 
-    - name: Set up management port
-      edgeos_config:
-        lines:
-          - delete interfaces switch switch0 switch-port interface eth3
-          - set interfaces ethernet eth3 address 192.168.2.1/24
-          - set interfaces ethernet eth3 description Management
-        save: yes
-
     - name: Set up DNS
-      edgeos_config:
-        src: 'dns.j2'
+      cli_config:
+        config: "{{ lookup('template', 'dns.j2') }}"
 
     - name: Set up DHCP
-      edgeos_config:
-        src: 'dhcp.j2'
+      cli_config:
+        config: "{{ lookup('template', 'dhcp.j2') }}"
 
     - name: Set other DHCP lines
-      edgeos_config:
-        lines:
+      cli_config:
+        config:
           - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 domain-name {{ domain }}
           - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller 192.168.1.{{ unifi.ip_address }}
 
     - name: Set port forwarding rules
-      edgeos_config:
-        src: 'port-forwards.j2'
+      cli_config:
+        config: "{{ lookup('template', 'port-forwards.j2') }}"
 
     - name: Set firewalls
-      edgeos_config:
-        src: 'firewall.j2'
+      cli_config:
+        config: "{{ lookup('template', 'firewall.j2') }}"
 
     - name: Define vlans
-      edgeos_config:
-        src: 'vlans.j2'
+      cli_config:
+        config: "{{ lookup('template', 'vlans.j2') }}"
