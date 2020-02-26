@@ -5,7 +5,7 @@ port-forward {
     wan-interface eth4
     {% for item in query('subelements', vlans.0.dhcp.static_ips, 'forwards', dict(skip_missing=True)) -%}
     rule {{ loop.index - 1 }} {
-        description {{ item.1.desc }}
+        description "{{ item.1.desc }}"
         forward-to {
             address 192.168.1.{{ item.0.ip_address }}
             port {{ item.1.port }}
