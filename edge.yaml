@@ -12,12 +12,19 @@
           - set system ip override-hostname-ip 192.168.1.1
 
     - name: Set up DNS
-      cli_config:
-        config: "{{ lookup('template', 'dns.j2') }}"
+      edgeos_config:
+        src: dns.j2
+      tags: dns
 
     - name: Set up DHCP
-      cli_config:
-        config: "{{ lookup('template', 'dhcp.j2') }}"
+      edgeos_config:
+        src: dhcp.j2
+      tags: dhcp
+
+    - name: Set up DHCPv6-PD
+      edgeos_config:
+        src: dhcpv6.j2
+      tags: dhcp
 
     - name: Set other DHCP lines
       cli_config:

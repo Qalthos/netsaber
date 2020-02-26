@@ -1,0 +1,20 @@
+interfaces {
+    ethernet eth4 {
+        dhcpv6 {
+            pd 0 {
+	        {% for vlan in vlans -%}
+		{% if vlan.vlan_id == 1 -%}
+                interface switch0 {
+		{% else -%}
+                interface switch0.{{ vlan.vlan_id }} {
+		{% endif -%}
+		    host-address '::1'
+		    no-dns
+		    prefix-id ':{{ vlan.vlan_id }}'
+		    service slaac
+		}
+		{% endfor -%}
+	    }
+	}
+    }
+}
