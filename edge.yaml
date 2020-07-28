@@ -1,45 +1,46 @@
 ---
 - hosts: edge
-  gather_facts: no
+  gather_facts: false
   connection: network_cli
 
   tasks:
     - name: set host & domain names
-      cli_config:
-        config:
-          - set system host-name router
-          - set system domain-name {{ domain }}
-          - set system ip override-hostname-ip 192.168.1.1
+      ansible.netcommon.cli_config:
+        config: |
+          set system host-name router
+          set system domain-name {{ domain }}
+          set system ip override-hostname-ip 192.168.1.1
+          set system offload hwnat enable
 
     - name: Set up DNS
-      edgeos_config:
+      community.network.edgeos_config:
         src: dns.j2
       tags: dns
 
     - name: Set up DHCP
-      edgeos_config:
+      community.network.edgeos_config:
         src: dhcp.j2
       tags: dhcp
 
     - name: Set up DHCPv6-PD
-      edgeos_config:
+      community.network.edgeos_config:
         src: dhcpv6.j2
       tags: dhcp
 
     - name: Set other DHCP lines
-      cli_config:
-        config:
-          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 domain-name {{ domain }}
-          - set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller 192.168.1.{{ unifi.ip_address }}
+      ansible.netcommon.cli_config:
+        config: |
+          set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 domain-name {{ domain }}
+          set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller 192.168.1.{{ unifi.ip_address }}
 
     - name: Set port forwarding rules
-      cli_config:
-        config: "{{ lookup('template', 'port-forwards.j2') }}"
+      community.network.edgeos_config:
+        src: port-forwards.j2
 
     - name: Set firewalls
-      cli_config:
-        config: "{{ lookup('template', 'firewall.j2') }}"
+      community.network.edgeos_config:
+        src: firewall.j2
 
     - name: Define vlans
-      cli_config:
-        config: "{{ lookup('template', 'vlans.j2') }}"
+      community.network.edgeos_config:
+        src: vlans.j2
