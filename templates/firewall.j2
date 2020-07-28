@@ -17,6 +17,14 @@ firewall {
             destination port 67-68
             log disable
             protocol udp
+	}
+        rule 2 {
+            action accept
+            description 'Allow mDNS'
+            destination port 5353
+            log disable
+            protocol udp
+	}
     }
     name {{ vlan.name|upper }}_IN {
         default-action accept
