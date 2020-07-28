@@ -14,7 +14,7 @@ service {
                 {% for item in query('dict', vlan.dhcp.static_ips) -%}
                 static-mapping {{ item.key }} {
                     ip-address 192.168.{{ vlan.vlan_id }}.{{ item.value.ip_address }}
-                    mac-address {{ item.value.mac_address }}
+                    mac-address '{{ item.value.mac_address }}'
                 }
                 {% endfor -%}
                 default-router 192.168.{{ vlan.vlan_id }}.1
