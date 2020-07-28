@@ -11,6 +11,7 @@
           set system domain-name {{ domain }}
           set system ip override-hostname-ip 192.168.1.1
           set system offload hwnat enable
+      tags: always
 
     - name: Set up DNS
       community.network.edgeos_config:
@@ -32,15 +33,19 @@
         config: |
           set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 domain-name {{ domain }}
           set service dhcp-server shared-network-name LAN subnet 192.168.1.0/24 unifi-controller 192.168.1.{{ unifi.ip_address }}
+      tags: dhcp
 
     - name: Set port forwarding rules
       community.network.edgeos_config:
         src: port-forwards.j2
+      tags: ports
 
     - name: Set firewalls
       community.network.edgeos_config:
         src: firewall.j2
+      tags: firewall
 
     - name: Define vlans
       community.network.edgeos_config:
         src: vlans.j2
+      tags: vlan
